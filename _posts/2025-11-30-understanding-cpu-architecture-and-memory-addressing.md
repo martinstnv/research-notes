@@ -101,7 +101,7 @@ In comparison, a 16-bit CPU can address up to 65,536 bytes, which equals 64 KB o
 
 ### Endianess
 
-When a CPU stores values larger than one byte—such as 2-byte, 4-byte, or 8-byte numbers—it must decide the order in which the bytes are stored in memory. This ordering is called endianness:
+When a CPU stores values larger than one byte, such as 2-byte, 4-byte, or 8-byte numbers, it must decide the order in which the bytes are stored in memory. This ordering is called endianness:
 
  - Big-endian: the most significant byte (MSB) is stored at the lowest memory address.
  - Little-endian: the least significant byte (LSB) is stored at the lowest memory address.
@@ -129,6 +129,10 @@ While in litte endian, it would be:
 
 As another example, the 16-bit value `0xCAFE` would be stored as `FECA0000` in little-endian format and as `0000CAFE` in big-endian format. Note that the leading zeros are typically displayed when showing memory contents in fixed-width formats.
 
-### Word Size
+### Word Size and Memory Access
 
-The word size of a CPU refers to the number of bits it processes or moves at a time. Common word sizes include 8-bit, 16-bit, 32-bit, and 64-bit, and this fundamental characteristic affects how the CPU accesses memory, how much memory it can address, and overall performance.
+The word size of a CPU refers to the number of bits it processes or moves at a time. For example, a 32-bit CPU works with 32-bit (4-byte) chunks, while a 64-bit CPU works with 64-bit (8-byte) chunks. Larger word sizes allow the CPU to handle bigger numbers and process more data at once, improving performance.
+
+Even though memory is addressed one byte at a time, CPUs typically read and write data in units of their word size. To support this, memory is often organized and accessed in aligned blocks, meaning that multi-byte values are stored at addresses that are multiples of the CPU’s word size. Aligned access is faster and more efficient, while misaligned access can slow down execution or even cause hardware exceptions on some systems.
+
+Word size also determines how the CPU interprets multi-byte values in memory. When reading a word, the CPU must know the system's endianness, whether the most significant or least significant byte comes first, so it can reconstruct the original value correctly.
