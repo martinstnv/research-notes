@@ -63,8 +63,35 @@ Each memory address corresponds to 1 byte in memory. For example:
 |  0000 0000 0000 0000 0000 0000 0001 0000  |  0x00000010     |  0101 0101      |  0x55        |
 |  0000 0000 0000 0000 0000 0000 0001 0001  |  0x00000011     |  1001 1001      |  0x99        |
 |  0000 0000 0000 0000 0000 0000 0001 0010  |  0x00000012     |  1110 1110      |  0xEE        |
+|  0000 0000 0000 0000 0000 0000 0001 0010  |  0x00000013     |  1100 1100      |  0xDD        |
 
 
-Converting from bits to bytes, a 32-bit CPU can address a total of 4,294,967,296 bytes, which equals 4,194,304 KB, 4,096 MB, or 4 GB of memory. This means the maximum memory a 32-bit CPU can use is 4 GB of RAM.
+Converting from bits to bytes, a 32-bit CPU can address a total of 4,294,967,296 bytes, which equals exactly 4 GB of memory. This means the maximum memory a 32-bit CPU can use is 4 GB of RAM.
 
-In comparison, a 16-bit CPU can address up to 65,536 bytes, which equals 64 KB of memory, while a 64-bit CPU can theoretically address up to 18,446,744,065,119,617,025 KB, or 16,384 PB of memory.
+When a CPU stores values larger than one byte—such as 2-byte, 4-byte, or 8-byte numbers—it must decide the order in which the bytes are stored in memory. This ordering is called endianness:
+
+ - Big-endian: the most significant byte (MSB) is stored at the lowest memory address.
+ - Little-endian: the least significant byte (LSB) is stored at the lowest memory address.
+
+For example, using the table above, the values would be arranged differently in memory depending on the endianness.
+
+|  Address     |  Data        |
+|  ----------  |  ----------  |
+|  0x00000000  |  0x000F1011  |
+|  0x00000004  |  0x121A1F20  |
+|  0x00000008  |  0x242F3F4F  |
+|  0x0000000C  |  0x8FAFFFAA  |
+|  0x00000010  |  0x5599EEDD  |
+
+
+While in litte endian, it would be:
+
+|  Address     |  Data        |
+|  ----------  |  ----------  |
+|  0x00000000  |  0x11100F00  |
+|  0x00000004  |  0x201F1A12  |
+|  0x00000008  |  0x4F3F2F24  |
+|  0x0000000C  |  0xAAFFAF8F  |
+|  0x00000010  |  0xDDEE9955  |
+
+As another example, the 16-bit value `0xCAFE` would be stored as `FECA0000` in little-endian format and as `0000CAFE` in big-endian format. Note that the leading zeros are typically displayed when showing memory contents in fixed-width formats.
