@@ -10,6 +10,8 @@ tags:
 
 > How a CPU’s architecture determines the size of its memory space, how memory addresses work at the byte level, and how these addresses are represented in binary and hexadecimal formats, showing the maximum memory each architecture can handle.
 
+## Memory Addressing
+
 A 32-bit CPU architecture means that the process memory space is represented using 32 bits. The lowest memory address in this space can be visualized in binary as `0000 0000 0000 0000 0000 0000 0000 0000`. Following the same logic, the highest memory address in binary is `1111 1111 1111 1111 1111 1111 1111 1111`.
 
 By convention, memory addresses are often written in hexadecimal format. In this notation, the lowest address is `0x00000000` and the highest address is `0xFFFFFFFF`, since each group of four binary digits corresponds to a single hexadecimal digit, with `0000` equaling 0x0 and `1111` equaling 0xF.
@@ -36,7 +38,7 @@ In comparison, the highest memory address of a 64-bit architecture would be:
 
 |  Binary representation                                                            |  Power of 2  |  Calculation                    |  Decimal representation      |
 |  -------------------------------------------------------------------------------  |  ----------  |  -----------------------------  |  --------------------------  |
-|  1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111  |  2 ^ 64 - 1  |  268,435,456 x 268,435,456 - 1  |  18 446 744 065 119 617 025  |
+|  1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111  |  2^{64} - 1  |  268,435,456 x 268,435,456 - 1  |  18 446 744 065 119 617 025  |
 
 So what exactly does this memory space mean?
 
@@ -66,7 +68,16 @@ Each memory address corresponds to 1 byte in memory. For example:
 |  0000 0000 0000 0000 0000 0000 0001 0010  |  0x00000013     |  1100 1100      |  0xDD        |
 
 
-Converting from bits to bytes, a 32-bit CPU can address a total of 4,294,967,296 bytes, which equals exactly 4 GB of memory. This means the maximum memory a 32-bit CPU can use is 4 GB of RAM.
+A 32-bit CPU can reference up to 2^{32} = 4,294,967,296 memory locations, which equals exactly 4 GB of memory. This is called addressable memory and it is the maximum amount of memory that a CPU can reference using its addresses.
+
+Physical memory is the actual RAM installed in the system and it is often less than the maximum addressable memory. Some addresses are reserved for system devices or hardware I/O, so not all addresses map to physical RAM.
+
+> Operating systems use virtual memory to allow processes to work as if they have the full addressable space, even if physical RAM is smaller.
+
+In comparison, a 16-bit CPU can address up to 65,536 bytes, which equals 64 KB of addressable memory, while a 64-bit CPU can theoretically address up to 18,446,744,065,119,617,025 KB, or 16,384 PB of memory.
+
+
+## Endianess
 
 When a CPU stores values larger than one byte—such as 2-byte, 4-byte, or 8-byte numbers—it must decide the order in which the bytes are stored in memory. This ordering is called endianness:
 
