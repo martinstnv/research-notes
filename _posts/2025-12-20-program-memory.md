@@ -84,31 +84,31 @@ During execution, the program keeps track of the Stack Pointer, which marks the 
 When a push instruction is executed, the value is placed onto the Stack, and the Stack Pointer is updated accordingly.
 
 ```
-0xFFFFFFFF  |-----------------------------|                      0xFFFFFFFF  |-----------------------------|
-            |             ...             |                                  |             ...             |
-            |-----------------------------|                                  |-----------------------------|
-            |            Stack            |                                  |            Stack            |
-            |.............................|                                  |.............................|
-            |            1337             |                                  |            1337             |                    
-            |.............................| <- Stack Pointer                 |.............................|
-            |                             |                                  |            7331             |
-            |                             |                                  |.............................| <- Stack Pointer
-            |                             |                                  |                             |
-            |                             |                                  |                             |
-            |                             |                                  |                             |
-            |.............................|                                  |.............................|
-            |            Heap             |                                  |            Heap             |
-            |-----------------------------|                                  |-----------------------------|
-            |             ...             |                                  |             ...             |
-            |-----------------------------|                                  |-----------------------------|
-            |        section .text        |                                  |        section .text        |
-            |        global _start        |                                  |        global _start        |
-            |                             |                                  |                             |
-            |        _start:              |                                  |        _start:              |
-            |            push 0x539;      |                                  |            push 0x539;      |
-            |            ...              |                                  |            push 0x1CB3;     |
-            |            ...              |                                  |            ...              |
-0x00000000  |-----------------------------|                                  |-----------------------------|
+0xFFFFFFFF  |-----------------------------|
+            |             ...             |
+            |-----------------------------|
+            |            Stack            |
+            |.............................|
+            |            1337             |                    
+            |.............................|
+            |            7331             |
+            |.............................| <- Stack Pointer
+            |                             |
+            |                             |
+            |                             |
+            |.............................|
+            |            Heap             |
+            |-----------------------------|
+            |             ...             |
+            |-----------------------------|
+            |        section .text        |
+            |        global _start        |
+            |                             |
+            |        _start:              |
+            |            push 0x539;      |
+            |            push 0x1CB3;     |
+            |            ...              |
+            |-----------------------------|
 ```
 
 In addition to storing local variables, the stack is used to manage function calls and returns, keeping track of return addresses and other bookkeeping information.
@@ -132,7 +132,6 @@ The function receives three arguments and contains two local variables. The diag
             |-----------------------------|
             |         Caller's data       |
             |.............................| <- Stack Pointer
-            |                             |
             |                             |
             |                             |
 ```
