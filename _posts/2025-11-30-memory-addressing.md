@@ -69,12 +69,21 @@ Each memory address corresponds to 1 byte in memory. For example:
 
 A 32-bit CPU can reference up to 2^{32} = 4,294,967,296 memory locations, which equals exactly 4 GB of memory. This is called addressable memory and it is the maximum amount of memory that a CPU can reference using its addresses.
 
+### Physical and Addressable Memory
+
 Physical memory is the actual RAM installed in the system and it is often less than the maximum addressable memory. Some addresses are reserved for system devices or hardware I/O, so not all addresses map to physical RAM.
 
 > Operating systems use virtual memory to allow processes to work as if they have the full addressable space, even if physical RAM is smaller.
 
 In comparison, a 16-bit CPU can address up to 65,536 bytes, which equals 64 KB of addressable memory, while a 64-bit CPU can theoretically address up to 18,446,744,065,119,617,025 KB, or 16,384 PB of memory.
 
+### Physical and Virtual Memory
+
+Most modern OSes (Linux, Windows, macOS) use virtual memory. Each process sees its own virtual address space.
+
+For 32-bit architectures virtual addresses go from `0x00000000` to `0xFFFFFFFF`. This does not correspond to physical RAM addresses. Multiple processes can have the same virtual addresses that map to different physical memory locations.
+
+Physical RAM is shared among all processes. Virtual addresses are translated to physical addresses by the CPU using page tables. So the stack of one program isn’t actually at the same place in RAM as the stack of another program, even if they both see 0xFFFFF… in their own virtual space.
 
 ## Endianess
 
