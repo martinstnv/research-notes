@@ -14,43 +14,29 @@ tags:
 The following diagram illustrates a typical program memory layout on a 32-bit system, with virtual addresses spanning from `0x00000000` to `0xFFFFFFFF`.
 
 ```
-High Address (0xFFFFFFFF)  ->  |-----------------------------|
-                               |                             |
-                               |   Command-line arguments    |
-                               |  and environment variables  |
-                               |                             |
-                               |-----------------------------|
-                               |                             |
-                               |            Stack            | 
-                               |                             |
-                               |.............................|
-                               |              |              |
-                               |              V              |
-                               |                             |
-                               |                             |
-                               |                             |
-                               |              ^              |
-                               |              |              |
-                               |.............................|
-                               |                             |
-                               |            Heap             | 
-                               |                             |
-                               |-----------------------------|
-                               |                             |
-                               |     Data Segment (BSS)      |
-                               |       (Uninitialised)       | 
-                               |                             |
-                               |-----------------------------|
-                               |                             |
-                               |         Data Segment        |
-                               |         (Initialised)       | 
-                               |                             |
-                               |-----------------------------|
-                               |                             |
-                               |         Text Segment        |
-                               |        (Program Code)       |
-                               |                             |
-Low Address  (0x00000000)  ->  |-----------------------------|
+(High Address)
+0xFFFFFFFF  ->  |-----------------------------|
+                |   Command-line arguments    |
+                |  and environment variables  |
+                |-----------------------------|
+                |            Stack            | 
+                |.............................|
+                |                             |
+                |.............................|
+                |                             |
+                |            Heap             | 
+                |                             |
+                |-----------------------------|
+                |     Data Segment (BSS)      |
+                |       (Uninitialised)       | 
+                |-----------------------------|
+                |         Data Segment        |
+                |         (Initialised)       | 
+                |-----------------------------|
+                |         Text Segment        |
+                |        (Program Code)       |
+0x00000000  ->  |-----------------------------|
+(Low Address)
 ```
 
 At the bottom of the address space lies the Text Segment, also called the Code Segment, which stores the program’s instructions.
@@ -75,33 +61,23 @@ During execution, the program keeps track of the Stack Pointer, which marks the 
 
 ```
 0xFFFFFFFF  |-----------------------------|
-            |                             |
             |             ...             |
-            |                             |
             |-----------------------------|
-            |                             |
             |            Stack            | 
-            |                             |
             |.............................| <- Stack Pointer
             |                             |
             |                             |
             |                             |
             |.............................|
-            |                             |
             |            Heap             | 
-            |                             |
             |-----------------------------|
-            |                             |
             |             ...             |
-            |                             |
             |-----------------------------|
-            |                             |
             |        section .text        |
             |        global _start        |
             |                             |
             |        _start:              |
-            |            push 0x539;      |
-            |                             |
+            |            ...              |
 0x00000000  |-----------------------------|
 ```
 
@@ -109,13 +85,9 @@ When a push instruction is executed, the value is placed onto the Stack, and the
 
 ```
 0xFFFFFFFF  |-----------------------------|                      0xFFFFFFFF  |-----------------------------|
-            |                             |                                  |                             |
             |             ...             |                                  |             ...             |
-            |                             |                                  |                             |
             |-----------------------------|                                  |-----------------------------|
-            |                             |                                  |                             |
             |            Stack            |                                  |            Stack            |
-            |                             |                                  |                             |
             |.............................|                                  |.............................|
             |            1337             |                                  |            1337             |                    
             |.............................| <- Stack Pointer                 |.............................|
@@ -125,23 +97,97 @@ When a push instruction is executed, the value is placed onto the Stack, and the
             |                             |                                  |                             |
             |                             |                                  |                             |
             |.............................|                                  |.............................|
-            |                             |                                  |                             |
             |            Heap             |                                  |            Heap             |
-            |                             |                                  |                             |
             |-----------------------------|                                  |-----------------------------|
-            |                             |                                  |                             |
             |             ...             |                                  |             ...             |
-            |                             |                                  |                             |
             |-----------------------------|                                  |-----------------------------|
-            |                             |                                  |                             |
             |        section .text        |                                  |        section .text        |
             |        global _start        |                                  |        global _start        |
             |                             |                                  |                             |
             |        _start:              |                                  |        _start:              |
             |            push 0x539;      |                                  |            push 0x539;      |
-            |                             |                                  |            push 0x1CB3;     |
-            |                             |                                  |                             |
+            |            ...              |                                  |            push 0x1CB3;     |
+            |            ...              |                                  |            ...              |
 0x00000000  |-----------------------------|                                  |-----------------------------|
 ```
 
-In addition to storing local variables, the Stack is used to manage function calls and returns, holding return addresses and other bookkeeping information.
+In addition to storing local variables, the stack is used to manage function calls and returns, keeping track of return addresses and other bookkeeping information.
+
+Now, let’s examine the basic stack layout for the following function.
+
+```
+void func(char *arg1, int arg2, int arg3)
+{
+    char loc1[4];
+    int loc2;
+    loc2++;
+}
+```
+
+The function receives three arguments and contains two local variables. The diagram below illustrates the process memory, beginning with the caller’s data, that is, the data belonging to the function that invoked this one.
+
+```
+0xFFFFFFFF  |-----------------------------|
+            |             ...             |
+            |-----------------------------|
+            |        Caller's locals      | 
+            |.............................| <- Stack Pointer
+            |                             |
+            |                             |
+            |                             |
+```
+
+When a CALL instruction is executed, the function arguments are first pushed onto the stack in reverse order, followed by the return address, which indicates the instruction to execute once the called function completes.
+
+
+```
+0xFFFFFFFF  |-----------------------------|
+            |             ...             |
+            |-----------------------------|
+            |        Caller's locals      | 
+            |.............................|
+            |             arg3            |
+            |.............................|
+            |             arg2            |
+            |.............................|
+            |             arg1            |
+            |.............................|
+            |        Return Address       |
+            |.............................| <- ESP
+            |                             |
+            |                             |
+```
+
+To ensure the function can return correctly to its caller and restore the caller’s Frame Pointer, the callee saves the previous EBP value onto the stack.
+
+For the compiler to accurately access a variable within a function, it needs to know the variable’s fixed offset relative to the Frame Pointer, usually stored in the EBP register. This is why the Frame Pointer is set to the current stack pointer’s value, and then all local variables are pushed onto the stack in the order they appear in the program.
+
+As a result, no matter when or from where the function is invoked, the compiler can reliably determine that a local variable, such as loc2, will always be located at a fixed offset (e.g., 8 bytes) from the Frame Pointer.
+
+```
+0xFFFFFFFF  |-----------------------------|
+            |             ...             |
+            |-----------------------------|
+            |        Caller's locals      | 
+            |.............................| <- start of stack frame of the called function
+            |             arg3            |
+            |.............................|
+            |             arg2            |
+            |.............................|
+            |             arg1            |
+            |.............................|
+            |        Return Address       |
+            |.............................|
+            |    Caller's Frame Pointer   |
+            |.............................| <- EBP
+            |             loc1            |
+            |.............................|
+            |             loc2            |
+            |.............................| <- ESP
+            |                             |
+            |                             |
+```
+
+When a called function completes execution, it uses the stored return address to continue execution in the caller.
+
+> In summary, a function call works as follows: the caller first pushes the function arguments onto the stack in reverse order, after which the CALL instruction pushes the return address. Within the called function, the previous Frame Pointer is saved on the stack, a new Frame Pointer is established, and space is allocated for local variables. To return, the function restores the previous stack frame by resetting the Frame Pointer and then jumps back to the return address stored on the stack.
