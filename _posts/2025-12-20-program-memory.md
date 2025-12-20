@@ -57,6 +57,8 @@ Unlike the Text and Data segments, the contents of the Stack and Heap are determ
 
 As the program requires more memory for the Heap, it expands upward toward higher memory addresses, whereas the Stack grows downward toward lower addresses when more space is needed.
 
+## The Stack
+
 During execution, the program keeps track of the Stack Pointer, which marks the current top of the Stack.
 
 ```
