@@ -63,13 +63,13 @@ During execution, the program keeps track of the Stack Pointer, which marks the 
 0xFFFFFFFF  |-----------------------------|
             |             ...             |
             |-----------------------------|
-            |            Stack            | 
+            |            Stack            |
             |.............................| <- Stack Pointer
             |                             |
             |                             |
             |                             |
             |.............................|
-            |            Heap             | 
+            |            Heap             |
             |-----------------------------|
             |             ...             |
             |-----------------------------|
@@ -91,7 +91,7 @@ When a push instruction is executed, the value is placed onto the Stack, and the
             |.............................|                                  |.............................|
             |            1337             |                                  |            1337             |                    
             |.............................| <- Stack Pointer                 |.............................|
-            |                             |                                  |            7331             | 
+            |                             |                                  |            7331             |
             |                             |                                  |.............................| <- Stack Pointer
             |                             |                                  |                             |
             |                             |                                  |                             |
@@ -130,7 +130,7 @@ The function receives three arguments and contains two local variables. The diag
 0xFFFFFFFF  |-----------------------------|
             |             ...             |
             |-----------------------------|
-            |         Caller's data       | 
+            |         Caller's data       |
             |.............................| <- Stack Pointer
             |                             |
             |                             |
@@ -144,7 +144,7 @@ When a CALL instruction is executed, the function arguments are first pushed ont
 0xFFFFFFFF  |-----------------------------|
             |             ...             |
             |-----------------------------|
-            |         Caller's data       | 
+            |         Caller's data       |
             |.............................|
             |             arg3            |
             |.............................|
@@ -168,8 +168,8 @@ As a result, no matter when or from where the function is invoked, the compiler 
 0xFFFFFFFF  |-----------------------------|
             |             ...             |
             |-----------------------------|
-            |         Caller's data       | 
-            |.............................| <- start of stack frame of the called function
+            |         Caller's data       |
+            |.............................| <- start of stack frame
             |             arg3            |
             |.............................|
             |             arg2            |
@@ -188,6 +188,31 @@ As a result, no matter when or from where the function is invoked, the compiler 
             |                             |
 ```
 
+Everything from the first argument till the stack pointer is considered as the Stack Frame.
+
+```
+0xFFFFFFFF  |-----------------------------|
+            |             ...             |
+            |-----------------------------|
+            |         Caller's data       |
+            |.............................| <--
+            |             arg3            |    |
+            |.............................|    |
+            |                             |    |
+            |             ...             |    | Stack Frame
+            |                             |    |
+            |.............................|    |
+            |             loc2            |    |
+            |.............................| <--
+            |                             |
+            |                             |
+```
+
 When a called function completes execution, it uses the stored return address to continue execution in the caller.
 
-In summary a function call works as follows: the caller first pushes the function arguments onto the stack in reverse order, after which the CALL instruction pushes the return address. Within the called function, the previous Frame Pointer is saved on the stack, a new Frame Pointer is established, and space is allocated for local variables. To return, the function restores the previous stack frame by resetting the Frame Pointer and then jumps back to the return address stored on the stack.
+> In summary a function call works as follows:
+> 1. The caller first pushes the function arguments onto the stack in reverse order, followed by the return address
+> 2. Within the called function, the previous Frame Pointer is saved on the stack
+> 3. A new Frame Pointer is established and space is allocated for local variables
+
+> To return, the function restores the previous stack frame by resetting the Frame Pointer and then jumps back to the return address stored on the stack.
