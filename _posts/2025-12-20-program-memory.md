@@ -23,9 +23,7 @@ The following diagram illustrates a typical program memory layout on a 32-bit sy
                 |.............................|
                 |                             |
                 |.............................|
-                |                             |
-                |            Heap             | 
-                |                             |
+                |            Heap             |
                 +-----------------------------+
                 |     Data Segment (BSS)      |
                 |       (Uninitialised)       | 
