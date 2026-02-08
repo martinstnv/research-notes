@@ -22,9 +22,9 @@ copyright = "Martin Stoynov"
   url = "/tags/"
 
 [[menu.main]]
-  identifier = "posts"
-  name = "Posts"
-  url = "/posts/"
+  identifier = "notes"
+  name = "Notes"
+  url = "/notes/"
 
 [[params.social]]
   icon = "github"
