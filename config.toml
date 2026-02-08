@@ -1,6 +1,6 @@
 baseURL = '/'
 languageCode = 'en-us'
-title = 'Digital Garden'
+title = 'Research Notes'
 theme = "m10c"
 googleAnalytics = ""
 
@@ -12,7 +12,7 @@ copyright = "Martin Stoynov"
 
 [params]
   author = "Martin Stoynov"
-  description = "Thoughts, experiments and ideas from my digital garden."
+  description = "A Zettelkasten-style digital garden of evolving research notes."
   favicon = "favicon.ico"
   avatar = "avatar.jpg"
 
