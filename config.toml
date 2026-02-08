@@ -17,13 +17,18 @@ copyright = "Martin Stoynov"
   avatar = "avatar.jpg"
 
 [[menu.main]]
+  identifier = "root"
+  name = "Notes"
+  url = "/"
+
+[[menu.main]]
   identifier = "tags"
   name = "Tags"
   url = "/tags/"
 
 [[menu.main]]
   identifier = "posts"
-  name = "Posts"
+  name = "Notes"
   url = "/posts/"
 
 [[params.social]]
