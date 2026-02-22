@@ -1,5 +1,6 @@
 ---
 title: Compiling Code
+date: 2026-02-22
 tags:
     - Assembly
     - C++
