@@ -1,6 +1,6 @@
 ---
-title: Compiling C++ Code
-date: 2023-11-01
+title: Compiling Native Code
+date: 2026-03-06
 tags:
     - Assembly
     - C++
