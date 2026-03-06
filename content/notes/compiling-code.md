@@ -195,3 +195,25 @@ func():
         leave
         ret
 ```
+
+`sub rsp, 16` reserves 16 bytes on the stack for the two local variables.
+
+> Compilers often round stack allocations up to a multiple of 16 for alignment purposes, which can improve performance on modern CPUs.
+
+The EAX register temporarily holds the value of the variable `x`, and `mov edi, eax` copies it into EDI, which is used to pass the first argument to a function.
+
+Next, the factorial function is called for the first time.
+
+Inside the function, the value in EDI is compared to `0`.
+
+> EAX serves a dual purpose: it temporarily stores the local value and also holds the return value.
+
+If the comparison indicates that `x` is `0`, the program sets EAX to 1 and jumps to `.L3` to return, where the value in EAX will be stored in the variable `y`.
+
+The `leave` instruction is equivalent to `mov rsp, rbp` followed by `pop rbp`.
+
+> In simpler examples (or very small functions), sometimes the compiler optimizes away mov rsp, rbp because it already knows that rsp is in the correct position.
+
+If the comparison fails, execution jumps to `.L2`. There, EAX is loaded with the locally stored function argument, decremented by 1, and reassigned to EDI to serve as the argument for the recursive call.
+
+After the recursive call returns, EAX contains the result, which is then multiplied by the original local argument to compute `x * factorial(x - 1)`.
