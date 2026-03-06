@@ -6,7 +6,7 @@ tags:
     - C++
 ---
 
-> Visualizing simple C functions compiled with GCC 15.2 into x86-64 assembly to analyze stack frame layouts, register usage, argument passing, and control-flow decisions, all interactively explored through the [Compiler Explorer](https://godbolt.org)
+> Visualizing simple functions compiled with GCC 15.2 into x86-64 assembly to analyze stack frame layouts, register usage, argument passing, and control-flow decisions.
 
 
 ## Assignment to Local Variables
@@ -27,21 +27,21 @@ func():
         ret
 ```
 
-`push rbp` saves the current value of the base pointer (rbp) onto the stack. This preserves the caller's frame pointer so it can be restored when the function returns.
+1. `push rbp` saves the current value of the base pointer (rbp) onto the stack. This preserves the caller's frame pointer so it can be restored when the function returns.
 
-`mov rbp, rsp` establishes a new stack frame for the current function by copying the stack pointer (rsp) into the base pointer (rbp). The base pointer provides a stable reference point for accessing local variables and function parameters within the stack frame.
+2. `mov rbp, rsp` establishes a new stack frame for the current function by copying the stack pointer (rsp) into the base pointer (rbp). The base pointer provides a stable reference point for accessing local variables and function parameters within the stack frame.
 
-Because the base pointer remains constant throughout the function's execution, the compiler can reference local variables using fixed offsets relative to rbp. For example, the variable x is stored at a fixed offset from the frame pointer (in this case, 4 bytes below it).
+3. Because the base pointer remains constant throughout the function's execution, the compiler can reference local variables using fixed offsets relative to rbp. For example, the variable x is stored at a fixed offset from the frame pointer (in this case, 4 bytes below it).
 
-`mov DWORD PTR [rbp-4], 1337` writes the value 1337 to the memory location at rbp - 4. 
+4. `mov DWORD PTR [rbp-4], 1337` writes the value 1337 to the memory location at rbp - 4. 
 
 > The DWORD qualifier specifies that the operation writes 4 bytes, which corresponds to the size of an int.
 
-The `nop` instruction is simply padding inserted by the compiler and does not affect the program's logic.
+5. The `nop` instruction is simply padding inserted by the compiler and does not affect the program's logic.
 
-`pop rbp` restores the previous stack frame pointer.
+6. `pop rbp` restores the previous stack frame pointer.
 
-Finally, `ret` returns control to the calling function.
+7. Finally, `ret` returns control to the calling function.
 
 > Internally it pops the return address from the stack and jumps to that address
 
@@ -97,17 +97,17 @@ func(int):
         ret
 ```
 
-`mov DWORD PTR [rbp-20], edi` copies the function argument num from the `edi` register into memory at `[rbp-20]`.
+1. `mov DWORD PTR [rbp-20], edi` copies the function argument num from the `edi` register into memory at `[rbp-20]`.
 
 > The offset of 20 bytes from rbp is chosen to allocate space for all local variables, maintain proper alignment (typically 16-byte alignment on x86-64), and leave room for temporary variables or spilled registers.
 
-`mov eax, DWORD PTR [rbp-4]` loads the value of the local variable x into the eax register. This prepares it for comparison, as the `cmp` instruction operates on registers.
+2. `mov eax, DWORD PTR [rbp-4]` loads the value of the local variable x into the eax register. This prepares it for comparison, as the `cmp` instruction operates on registers.
 
-`cmp eax, DWORD PTR [rbp-20]` compares eax (holding x) with the stored argument `num`.
+3. `cmp eax, DWORD PTR [rbp-20]` compares eax (holding x) with the stored argument `num`.
 
 > The CPU sets status flags based on the result, which are then used by the conditional jump to determine control flow.
 
-`jge .L2` jumps to the label `.L2` if the comparison indicates that eax is greater than or equal to the argument.
+4. `jge .L2` jumps to the label `.L2` if the comparison indicates that eax is greater than or equal to the argument.
 
 > In other words, if the condition `x < num` is false, execution skips the body of the `if` statement.
 
@@ -142,7 +142,11 @@ func(int):
         ret
 ```
 
-After performing the initial assignments, the program jumps to the `.L2` label, which marks the beginning of the loop's condition check. The value of the local variable `x` is moved into the `eax` register so it can be compared with the function argument. If the comparison shows that `x` is less than the argument, execution jumps to the `.L3` label, where `x` is incremented. Control then flows back to the condition check, repeating the same instructions until the comparison fails. Once the condition is no longer true, the jump to `.L3` is skipped and the loop terminates.
+1. After performing the initial assignments, the program jumps to the `.L2` label, which marks the beginning of the loop's condition check. 
+2. The value of the local variable `x` is moved into the `eax` register so it can be compared with the function argument.
+3. If the comparison shows that `x` is less than the argument, execution jumps to the `.L3` label, where `x` is incremented.
+4. Control then flows back to the condition check, repeating the same instructions until the comparison fails.
+5. Once the condition is no longer true, the jump to `.L3` is skipped and the loop terminates.
 
 
 ## Function Calls
@@ -196,24 +200,24 @@ func():
         ret
 ```
 
-`sub rsp, 16` reserves 16 bytes on the stack for the two local variables.
+1. `sub rsp, 16` reserves 16 bytes on the stack for the two local variables.
 
 > Compilers often round stack allocations up to a multiple of 16 for alignment purposes, which can improve performance on modern CPUs.
 
-The EAX register temporarily holds the value of the variable `x`, and `mov edi, eax` copies it into EDI, which is used to pass the first argument to a function.
+2. The EAX register temporarily holds the value of the variable `x`, and `mov edi, eax` copies it into EDI, which is used to pass the first argument to a function.
 
-Next, the factorial function is called for the first time.
+3. Next, the factorial function is called for the first time.
 
-Inside the function, the value in EDI is compared to `0`.
+4. Inside the function, the value in EDI is compared to `0`.
 
 > EAX serves a dual purpose: it temporarily stores the local value and also holds the return value.
 
-If the comparison indicates that `x` is `0`, the program sets EAX to 1 and jumps to `.L3` to return, where the value in EAX will be stored in the variable `y`.
+5. If the comparison indicates that `x` is `0`, the program sets EAX to 1 and jumps to `.L3` to return, where the value in EAX will be stored in the variable `y`.
 
-The `leave` instruction is equivalent to `mov rsp, rbp` followed by `pop rbp`.
+6. The `leave` instruction is equivalent to `mov rsp, rbp` followed by `pop rbp`.
 
 > In simpler examples (or very small functions), sometimes the compiler optimizes away mov rsp, rbp because it already knows that rsp is in the correct position.
 
-If the comparison fails, execution jumps to `.L2`. There, EAX is loaded with the locally stored function argument, decremented by 1, and reassigned to EDI to serve as the argument for the recursive call.
+7. If the comparison fails, execution jumps to `.L2`. There, EAX is loaded with the locally stored function argument, decremented by 1, and reassigned to EDI to serve as the argument for the recursive call.
 
-After the recursive call returns, EAX contains the result, which is then multiplied by the original local argument to compute `x * factorial(x - 1)`.
+8. After the recursive call returns, EAX contains the result, which is then multiplied by the original local argument to compute `x * factorial(x - 1)`.
