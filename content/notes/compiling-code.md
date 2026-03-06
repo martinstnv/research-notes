@@ -11,15 +11,11 @@ tags:
 
 ## Assignment to Local Variables
 
-Consider the following function, which assigns an integer value to a local variable:
-
 ```cpp
 void func() {
     int x = 3;
 }
 ```
-
-This code compiles to the following assembly instructions:
 
 ```
 func():
@@ -49,17 +45,14 @@ Finally, `ret` returns control to the calling function.
 
 > Internally it pops the return address from the stack and jumps to that address
 
-## Assignment to Function Arguments
 
-Now, consider the following function, which assigns a value to a function argument:
+## Assignment to Function Arguments
 
 ```cpp
 int func(int num) {
     num = 1337;
 }
 ```
-
-The compiler generates the following assembly instructions:
 
 ```
 func(int):
@@ -79,8 +72,6 @@ func(int):
 
 ## Conditional Statements
 
-Next, consider a simple comparison between a local variable and a function argument:
-
 ```cpp
 int func(int num) {
     int x = 1337;
@@ -89,8 +80,6 @@ int func(int num) {
     }
 }
 ```
-
-The corresponding assembly introduces an additional label, .L2, to manage the conditional branch:
 
 ```
 func(int):
