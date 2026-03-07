@@ -12,66 +12,66 @@ Mar 5, 2026</div><div><svg class="icon icon-clock" viewBox="0 0 24 24" fill="non
 <a class=tag href=/tags/c++/>C++</a></div></div></header><div class=post-content><blockquote><p>Visualizing simple functions compiled with GCC 15.2 into x86-64 assembly to analyze stack frame layouts, register usage, argument passing, and control-flow decisions.</p></blockquote><h2 id=assignment-to-local-variables>Assignment to Local Variables</h2><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#66d9ef>void</span> <span style=color:#a6e22e>func</span>() {
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>int</span> x <span style=color:#f92672>=</span> <span style=color:#ae81ff>3</span>;
 </span></span><span style=display:flex><span>}
-</span></span></code></pre></div><pre tabindex=0><code>func():
-        push    rbp
-        mov     rbp, rsp
-        mov     DWORD PTR [rbp-4], 3
-        nop
-        pop     rbp
-        ret
-</code></pre><ol><li><p><code>push rbp</code> saves the current value of the base pointer (rbp) onto the stack. This preserves the caller&rsquo;s frame pointer so it can be restored when the function returns.</p></li><li><p><code>mov rbp, rsp</code> establishes a new stack frame for the current function by copying the stack pointer (rsp) into the base pointer (rbp). The base pointer provides a stable reference point for accessing local variables and function parameters within the stack frame.</p></li><li><p>Because the base pointer remains constant throughout the function&rsquo;s execution, the compiler can reference local variables using fixed offsets relative to rbp. For example, the variable x is stored at a fixed offset from the frame pointer (in this case, 4 bytes below it).</p></li><li><p><code>mov DWORD PTR [rbp-4], 1337</code> writes the value 1337 to the memory location at rbp - 4.</p></li></ol><blockquote><p>The DWORD qualifier specifies that the operation writes 4 bytes, which corresponds to the size of an int.</p></blockquote><ol start=5><li><p>The <code>nop</code> instruction is simply padding inserted by the compiler and does not affect the program&rsquo;s logic.</p></li><li><p><code>pop rbp</code> restores the previous stack frame pointer.</p></li><li><p>Finally, <code>ret</code> returns control to the calling function.</p></li></ol><blockquote><p>Internally it pops the return address from the stack and jumps to that address</p></blockquote><h2 id=assignment-to-function-arguments>Assignment to Function Arguments</h2><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#66d9ef>int</span> <span style=color:#a6e22e>func</span>(<span style=color:#66d9ef>int</span> num) {
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-asm data-lang=asm><span style=display:flex><span><span style=color:#a6e22e>func</span>():
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>push</span>    <span style=color:#66d9ef>rbp</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>rbp</span>, <span style=color:#66d9ef>rsp</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>DWORD</span> <span style=color:#66d9ef>PTR</span> [<span style=color:#66d9ef>rbp-4</span>], <span style=color:#ae81ff>3</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>nop</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>pop</span>     <span style=color:#66d9ef>rbp</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>ret</span>
+</span></span></code></pre></div><ol><li><p><code>push rbp</code> saves the current value of the base pointer (rbp) onto the stack. This preserves the caller&rsquo;s frame pointer so it can be restored when the function returns.</p></li><li><p><code>mov rbp, rsp</code> establishes a new stack frame for the current function by copying the stack pointer (rsp) into the base pointer (rbp). The base pointer provides a stable reference point for accessing local variables and function parameters within the stack frame.</p></li><li><p>Because the base pointer remains constant throughout the function&rsquo;s execution, the compiler can reference local variables using fixed offsets relative to rbp. For example, the variable x is stored at a fixed offset from the frame pointer (in this case, 4 bytes below it).</p></li><li><p><code>mov DWORD PTR [rbp-4], 1337</code> writes the value 1337 to the memory location at rbp - 4.</p></li></ol><blockquote><p>The DWORD qualifier specifies that the operation writes 4 bytes, which corresponds to the size of an int.</p></blockquote><ol start=5><li><p>The <code>nop</code> instruction is simply padding inserted by the compiler and does not affect the program&rsquo;s logic.</p></li><li><p><code>pop rbp</code> restores the previous stack frame pointer.</p></li><li><p>Finally, <code>ret</code> returns control to the calling function.</p></li></ol><blockquote><p>Internally it pops the return address from the stack and jumps to that address</p></blockquote><h2 id=assignment-to-function-arguments>Assignment to Function Arguments</h2><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#66d9ef>int</span> <span style=color:#a6e22e>func</span>(<span style=color:#66d9ef>int</span> num) {
 </span></span><span style=display:flex><span>    num <span style=color:#f92672>=</span> <span style=color:#ae81ff>1337</span>;
 </span></span><span style=display:flex><span>}
-</span></span></code></pre></div><pre tabindex=0><code>func(int):
-        push    rbp
-        mov     rbp, rsp
-        mov     DWORD PTR [rbp-4], edi
-        mov     DWORD PTR [rbp-4], 1337
-        nop
-        pop     rbp
-        ret
-</code></pre><p><code>mov DWORD PTR [rbp-4], edi</code> copies the function argument num from the edi register into a local stack slot at <code>[rbp-4]</code>.</p><blockquote><p>Under the System V AMD64 calling convention (used on Linux and macOS), the first integer argument to a function is passed in the edi register. In unoptimized builds, compilers often store such arguments in the stack frame so they can be accessed consistently via fixed offsets from the base pointer.</p></blockquote><h2 id=conditional-statements>Conditional Statements</h2><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#66d9ef>int</span> <span style=color:#a6e22e>func</span>(<span style=color:#66d9ef>int</span> num) {
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-asm data-lang=asm><span style=display:flex><span><span style=color:#a6e22e>func</span>(<span style=color:#66d9ef>int</span>):
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>push</span>    <span style=color:#66d9ef>rbp</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>rbp</span>, <span style=color:#66d9ef>rsp</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>DWORD</span> <span style=color:#66d9ef>PTR</span> [<span style=color:#66d9ef>rbp-4</span>], <span style=color:#66d9ef>edi</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>DWORD</span> <span style=color:#66d9ef>PTR</span> [<span style=color:#66d9ef>rbp-4</span>], <span style=color:#ae81ff>1337</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>nop</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>pop</span>     <span style=color:#66d9ef>rbp</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>ret</span>
+</span></span></code></pre></div><p><code>mov DWORD PTR [rbp-4], edi</code> copies the function argument num from the edi register into a local stack slot at <code>[rbp-4]</code>.</p><blockquote><p>Under the System V AMD64 calling convention (used on Linux and macOS), the first integer argument to a function is passed in the edi register. In unoptimized builds, compilers often store such arguments in the stack frame so they can be accessed consistently via fixed offsets from the base pointer.</p></blockquote><h2 id=conditional-statements>Conditional Statements</h2><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#66d9ef>int</span> <span style=color:#a6e22e>func</span>(<span style=color:#66d9ef>int</span> num) {
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>int</span> x <span style=color:#f92672>=</span> <span style=color:#ae81ff>1337</span>;
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (x <span style=color:#f92672>&lt;</span> num) {
 </span></span><span style=display:flex><span>        x <span style=color:#f92672>=</span> <span style=color:#ae81ff>7331</span>;
 </span></span><span style=display:flex><span>    }
 </span></span><span style=display:flex><span>}
-</span></span></code></pre></div><pre tabindex=0><code>func(int):
-        push    rbp
-        mov     rbp, rsp
-        mov     DWORD PTR [rbp-20], edi
-        mov     DWORD PTR [rbp-4], 1337
-        mov     eax, DWORD PTR [rbp-4]
-        cmp     eax, DWORD PTR [rbp-20]
-        jge     .L3
-        mov     DWORD PTR [rbp-4], 7331
-.L3:
-        nop
-        pop     rbp
-        ret
-</code></pre><ol><li><code>mov DWORD PTR [rbp-20], edi</code> copies the function argument num from the <code>edi</code> register into memory at <code>[rbp-20]</code>.</li></ol><blockquote><p>The offset of 20 bytes from rbp is chosen to allocate space for all local variables, maintain proper alignment (typically 16-byte alignment on x86-64), and leave room for temporary variables or spilled registers.</p></blockquote><ol start=2><li><p><code>mov eax, DWORD PTR [rbp-4]</code> loads the value of the local variable x into the eax register. This prepares it for comparison, as the <code>cmp</code> instruction operates on registers.</p></li><li><p><code>cmp eax, DWORD PTR [rbp-20]</code> compares eax (holding x) with the stored argument <code>num</code>.</p></li></ol><blockquote><p>The CPU sets status flags based on the result, which are then used by the conditional jump to determine control flow.</p></blockquote><ol start=4><li><code>jge .L2</code> jumps to the label <code>.L2</code> if the comparison indicates that eax is greater than or equal to the argument.</li></ol><blockquote><p>In other words, if the condition <code>x &lt; num</code> is false, execution skips the body of the <code>if</code> statement.</p></blockquote><h2 id=loops>Loops</h2><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#66d9ef>void</span> <span style=color:#a6e22e>func</span>(<span style=color:#66d9ef>int</span> num) {
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-asm data-lang=asm><span style=display:flex><span><span style=color:#a6e22e>func</span>(<span style=color:#66d9ef>int</span>):
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>push</span>    <span style=color:#66d9ef>rbp</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>rbp</span>, <span style=color:#66d9ef>rsp</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>DWORD</span> <span style=color:#66d9ef>PTR</span> [<span style=color:#66d9ef>rbp-20</span>], <span style=color:#66d9ef>edi</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>DWORD</span> <span style=color:#66d9ef>PTR</span> [<span style=color:#66d9ef>rbp-4</span>], <span style=color:#ae81ff>1337</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>eax</span>, <span style=color:#66d9ef>DWORD</span> <span style=color:#66d9ef>PTR</span> [<span style=color:#66d9ef>rbp-4</span>]
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>cmp</span>     <span style=color:#66d9ef>eax</span>, <span style=color:#66d9ef>DWORD</span> <span style=color:#66d9ef>PTR</span> [<span style=color:#66d9ef>rbp-20</span>]
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>jge</span>     <span style=color:#66d9ef>.L3</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>DWORD</span> <span style=color:#66d9ef>PTR</span> [<span style=color:#66d9ef>rbp-4</span>], <span style=color:#ae81ff>7331</span>
+</span></span><span style=display:flex><span>.L3:
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>nop</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>pop</span>     <span style=color:#66d9ef>rbp</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>ret</span>
+</span></span></code></pre></div><ol><li><code>mov DWORD PTR [rbp-20], edi</code> copies the function argument num from the <code>edi</code> register into memory at <code>[rbp-20]</code>.</li></ol><blockquote><p>The offset of 20 bytes from rbp is chosen to allocate space for all local variables, maintain proper alignment (typically 16-byte alignment on x86-64), and leave room for temporary variables or spilled registers.</p></blockquote><ol start=2><li><p><code>mov eax, DWORD PTR [rbp-4]</code> loads the value of the local variable x into the eax register. This prepares it for comparison, as the <code>cmp</code> instruction operates on registers.</p></li><li><p><code>cmp eax, DWORD PTR [rbp-20]</code> compares eax (holding x) with the stored argument <code>num</code>.</p></li></ol><blockquote><p>The CPU sets status flags based on the result, which are then used by the conditional jump to determine control flow.</p></blockquote><ol start=4><li><code>jge .L2</code> jumps to the label <code>.L2</code> if the comparison indicates that eax is greater than or equal to the argument.</li></ol><blockquote><p>In other words, if the condition <code>x &lt; num</code> is false, execution skips the body of the <code>if</code> statement.</p></blockquote><h2 id=loops>Loops</h2><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#66d9ef>void</span> <span style=color:#a6e22e>func</span>(<span style=color:#66d9ef>int</span> num) {
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>int</span> x <span style=color:#f92672>=</span> <span style=color:#ae81ff>1337</span>;
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>while</span> (x <span style=color:#f92672>&lt;</span> num) {
 </span></span><span style=display:flex><span>        x <span style=color:#f92672>+=</span> <span style=color:#ae81ff>1</span>;
 </span></span><span style=display:flex><span>    }
 </span></span><span style=display:flex><span>}
-</span></span></code></pre></div><pre tabindex=0><code>func(int):
-        push    rbp
-        mov     rbp, rsp
-        mov     DWORD PTR [rbp-20], edi
-        mov     DWORD PTR [rbp-4], 1337
-        jmp     .L2
-.L3:
-        add     DWORD PTR [rbp-4], 1
-.L2:
-        mov     eax, DWORD PTR [rbp-4]
-        cmp     eax, DWORD PTR [rbp-20]
-        jl      .L3
-        nop
-        nop
-        pop     rbp
-        ret
-</code></pre><ol><li>After performing the initial assignments, the program jumps to the <code>.L2</code> label, which marks the beginning of the loop&rsquo;s condition check.</li><li>The value of the local variable <code>x</code> is moved into the <code>eax</code> register so it can be compared with the function argument.</li><li>If the comparison shows that <code>x</code> is less than the argument, execution jumps to the <code>.L3</code> label, where <code>x</code> is incremented.</li><li>Control then flows back to the condition check, repeating the same instructions until the comparison fails.</li><li>Once the condition is no longer true, the jump to <code>.L3</code> is skipped and the loop terminates.</li></ol><h2 id=function-calls>Function Calls</h2><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#66d9ef>int</span> <span style=color:#a6e22e>factorial</span>(<span style=color:#66d9ef>int</span> x) {
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-asm data-lang=asm><span style=display:flex><span><span style=color:#a6e22e>func</span>(<span style=color:#66d9ef>int</span>):
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>push</span>    <span style=color:#66d9ef>rbp</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>rbp</span>, <span style=color:#66d9ef>rsp</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>DWORD</span> <span style=color:#66d9ef>PTR</span> [<span style=color:#66d9ef>rbp-20</span>], <span style=color:#66d9ef>edi</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>DWORD</span> <span style=color:#66d9ef>PTR</span> [<span style=color:#66d9ef>rbp-4</span>], <span style=color:#ae81ff>1337</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>jmp</span>     <span style=color:#66d9ef>.L2</span>
+</span></span><span style=display:flex><span>.L3:
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>add</span>     <span style=color:#66d9ef>DWORD</span> <span style=color:#66d9ef>PTR</span> [<span style=color:#66d9ef>rbp-4</span>], <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span>.L2:
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>eax</span>, <span style=color:#66d9ef>DWORD</span> <span style=color:#66d9ef>PTR</span> [<span style=color:#66d9ef>rbp-4</span>]
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>cmp</span>     <span style=color:#66d9ef>eax</span>, <span style=color:#66d9ef>DWORD</span> <span style=color:#66d9ef>PTR</span> [<span style=color:#66d9ef>rbp-20</span>]
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>jl</span>      <span style=color:#66d9ef>.L3</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>nop</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>nop</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>pop</span>     <span style=color:#66d9ef>rbp</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>ret</span>
+</span></span></code></pre></div><ol><li>After performing the initial assignments, the program jumps to the <code>.L2</code> label, which marks the beginning of the loop&rsquo;s condition check.</li><li>The value of the local variable <code>x</code> is moved into the <code>eax</code> register so it can be compared with the function argument.</li><li>If the comparison shows that <code>x</code> is less than the argument, execution jumps to the <code>.L3</code> label, where <code>x</code> is incremented.</li><li>Control then flows back to the condition check, repeating the same instructions until the comparison fails.</li><li>Once the condition is no longer true, the jump to <code>.L3</code> is skipped and the loop terminates.</li></ol><h2 id=function-calls>Function Calls</h2><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#66d9ef>int</span> <span style=color:#a6e22e>factorial</span>(<span style=color:#66d9ef>int</span> x) {
 </span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> (x <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span>) {
 </span></span><span style=display:flex><span>	    <span style=color:#66d9ef>return</span> <span style=color:#ae81ff>1</span>;
 </span></span><span style=display:flex><span>	} <span style=color:#66d9ef>else</span> {
@@ -84,51 +84,51 @@ Mar 5, 2026</div><div><svg class="icon icon-clock" viewBox="0 0 24 24" fill="non
 </span></span><span style=display:flex><span>    x <span style=color:#f92672>=</span> <span style=color:#ae81ff>3</span>;
 </span></span><span style=display:flex><span>    y <span style=color:#f92672>=</span> factorial(x);
 </span></span><span style=display:flex><span>}
-</span></span></code></pre></div><pre tabindex=0><code>factorial(int):
-        push    rbp
-        mov     rbp, rsp
-        sub     rsp, 16
-        mov     DWORD PTR [rbp-4], edi
-        cmp     DWORD PTR [rbp-4], 0
-        jne     .L2
-        mov     eax, 1
-        jmp     .L3
-.L2:
-        mov     eax, DWORD PTR [rbp-4]
-        sub     eax, 1
-        mov     edi, eax
-        call    factorial(int)
-        imul    eax, DWORD PTR [rbp-4]
-.L3:
-        leave
-        ret
-func():
-        push    rbp
-        mov     rbp, rsp
-        sub     rsp, 16
-        mov     DWORD PTR [rbp-4], 3
-        mov     eax, DWORD PTR [rbp-4]
-        mov     edi, eax
-        call    factorial(int)
-        mov     DWORD PTR [rbp-8], eax
-        nop
-        leave
-        ret
-</code></pre><ol><li><code>sub rsp, 16</code> reserves 16 bytes on the stack for the two local variables.</li></ol><blockquote><p>Compilers often round stack allocations up to a multiple of 16 for alignment purposes, which can improve performance on modern CPUs.</p></blockquote><ol start=2><li><p>The EAX register temporarily holds the value of the variable <code>x</code>, and <code>mov edi, eax</code> copies it into EDI, which is used to pass the first argument to a function.</p></li><li><p>Next, the factorial function is called for the first time.</p></li><li><p>Inside the function, the value in EDI is compared to <code>0</code>.</p></li></ol><blockquote><p>EAX serves a dual purpose: it temporarily stores the local value and also holds the return value.</p></blockquote><ol start=5><li><p>If the comparison indicates that <code>x</code> is <code>0</code>, the program sets EAX to 1 and jumps to <code>.L3</code> to return, where the value in EAX will be stored in the variable <code>y</code>.</p></li><li><p>The <code>leave</code> instruction is equivalent to <code>mov rsp, rbp</code> followed by <code>pop rbp</code>.</p></li></ol><blockquote><p>In simpler examples (or very small functions), sometimes the compiler optimizes away mov rsp, rbp because it already knows that rsp is in the correct position.</p></blockquote><ol start=7><li><p>If the comparison fails, execution jumps to <code>.L2</code>. There, EAX is loaded with the locally stored function argument, decremented by 1, and reassigned to EDI to serve as the argument for the recursive call.</p></li><li><p>After the recursive call returns, EAX contains the result, which is then multiplied by the original local argument to compute <code>x * factorial(x - 1)</code>.</p></li></ol><h2 id=pointers>Pointers</h2><pre tabindex=0><code>void func() {
-    int x = 1337;
-    int *p;
-    p = &amp;x;
-    *p = 7331;
-}
-</code></pre><pre tabindex=0><code>func():
-        push    rbp
-        mov     rbp, rsp
-        mov     DWORD PTR [rbp-12], 1337
-        lea     rax, [rbp-12]
-        mov     QWORD PTR [rbp-8], rax
-        mov     rax, QWORD PTR [rbp-8]
-        mov     DWORD PTR [rax], 7331
-        nop
-        pop     rbp
-        re
-</code></pre><blockquote><p>On x86-64, 8-byte objects should be aligned to 8-byte boundaries. Therefore the pointer p must start at an address divisible by 8, since pointers occupy 8 bytes. In contrast, the integer variable <code>x</code> only requires 4 bytes.</p></blockquote><ol><li>After the function prologue and initialization of <code>x</code>, the program obtains the address of x using <code>lea rax, [rbp-12]</code>. This instruction loads the effective address of the local variable into the RAX register.</li></ol><blockquote><p>Note that this does not load the value of <code>x</code>, but rather its address.</p></blockquote><ol start=2><li><p>Next, <code>mov QWORD PTR [rbp-8], rax</code> stores that address in the memory location reserved for the pointer p.</p></li><li><p>The program then loads the value of <code>p</code> back into the RAX register with <code>mov rax, QWORD PTR [rbp-8]</code>. This places the address of <code>x</code> into RAX.</p></li><li><p>Finally, the instruction <code>mov DWORD PTR [rax], 7331</code> writes the value 7331 to the memory address stored in RAX. Since RAX holds the address of <code>x</code>, this operation effectively performs the assignment <code>*p = 7331</code>, changing the value of <code>x</code>.</p></li></ol></div><div class=post-footer></div></article></main></body></html>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-asm data-lang=asm><span style=display:flex><span><span style=color:#a6e22e>factorial</span>(<span style=color:#66d9ef>int</span>):
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>push</span>    <span style=color:#66d9ef>rbp</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>rbp</span>, <span style=color:#66d9ef>rsp</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>sub</span>     <span style=color:#66d9ef>rsp</span>, <span style=color:#ae81ff>16</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>DWORD</span> <span style=color:#66d9ef>PTR</span> [<span style=color:#66d9ef>rbp-4</span>], <span style=color:#66d9ef>edi</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>cmp</span>     <span style=color:#66d9ef>DWORD</span> <span style=color:#66d9ef>PTR</span> [<span style=color:#66d9ef>rbp-4</span>], <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>jne</span>     <span style=color:#66d9ef>.L2</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>eax</span>, <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>jmp</span>     <span style=color:#66d9ef>.L3</span>
+</span></span><span style=display:flex><span>.L2:
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>eax</span>, <span style=color:#66d9ef>DWORD</span> <span style=color:#66d9ef>PTR</span> [<span style=color:#66d9ef>rbp-4</span>]
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>sub</span>     <span style=color:#66d9ef>eax</span>, <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>edi</span>, <span style=color:#66d9ef>eax</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>call</span>    <span style=color:#66d9ef>factorial</span>(<span style=color:#66d9ef>int</span>)
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>imul</span>    <span style=color:#66d9ef>eax</span>, <span style=color:#66d9ef>DWORD</span> <span style=color:#66d9ef>PTR</span> [<span style=color:#66d9ef>rbp-4</span>]
+</span></span><span style=display:flex><span>.L3:
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>leave</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>ret</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>func</span>():
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>push</span>    <span style=color:#66d9ef>rbp</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>rbp</span>, <span style=color:#66d9ef>rsp</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>sub</span>     <span style=color:#66d9ef>rsp</span>, <span style=color:#ae81ff>16</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>DWORD</span> <span style=color:#66d9ef>PTR</span> [<span style=color:#66d9ef>rbp-4</span>], <span style=color:#ae81ff>3</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>eax</span>, <span style=color:#66d9ef>DWORD</span> <span style=color:#66d9ef>PTR</span> [<span style=color:#66d9ef>rbp-4</span>]
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>edi</span>, <span style=color:#66d9ef>eax</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>call</span>    <span style=color:#66d9ef>factorial</span>(<span style=color:#66d9ef>int</span>)
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>DWORD</span> <span style=color:#66d9ef>PTR</span> [<span style=color:#66d9ef>rbp-8</span>], <span style=color:#66d9ef>eax</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>nop</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>leave</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>ret</span>
+</span></span></code></pre></div><ol><li><code>sub rsp, 16</code> reserves 16 bytes on the stack for the two local variables.</li></ol><blockquote><p>Compilers often round stack allocations up to a multiple of 16 for alignment purposes, which can improve performance on modern CPUs.</p></blockquote><ol start=2><li><p>The EAX register temporarily holds the value of the variable <code>x</code>, and <code>mov edi, eax</code> copies it into EDI, which is used to pass the first argument to a function.</p></li><li><p>Next, the factorial function is called for the first time.</p></li><li><p>Inside the function, the value in EDI is compared to <code>0</code>.</p></li></ol><blockquote><p>EAX serves a dual purpose: it temporarily stores the local value and also holds the return value.</p></blockquote><ol start=5><li><p>If the comparison indicates that <code>x</code> is <code>0</code>, the program sets EAX to 1 and jumps to <code>.L3</code> to return, where the value in EAX will be stored in the variable <code>y</code>.</p></li><li><p>The <code>leave</code> instruction is equivalent to <code>mov rsp, rbp</code> followed by <code>pop rbp</code>.</p></li></ol><blockquote><p>In simpler examples (or very small functions), sometimes the compiler optimizes away mov rsp, rbp because it already knows that rsp is in the correct position.</p></blockquote><ol start=7><li><p>If the comparison fails, execution jumps to <code>.L2</code>. There, EAX is loaded with the locally stored function argument, decremented by 1, and reassigned to EDI to serve as the argument for the recursive call.</p></li><li><p>After the recursive call returns, EAX contains the result, which is then multiplied by the original local argument to compute <code>x * factorial(x - 1)</code>.</p></li></ol><h2 id=pointers>Pointers</h2><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#66d9ef>void</span> <span style=color:#a6e22e>func</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>int</span> x <span style=color:#f92672>=</span> <span style=color:#ae81ff>1337</span>;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>int</span> <span style=color:#f92672>*</span>p;
+</span></span><span style=display:flex><span>    p <span style=color:#f92672>=</span> <span style=color:#f92672>&amp;</span>x;
+</span></span><span style=display:flex><span>    <span style=color:#f92672>*</span>p <span style=color:#f92672>=</span> <span style=color:#ae81ff>7331</span>;
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-asm data-lang=asm><span style=display:flex><span><span style=color:#a6e22e>func</span>():
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>push</span>    <span style=color:#66d9ef>rbp</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>rbp</span>, <span style=color:#66d9ef>rsp</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>DWORD</span> <span style=color:#66d9ef>PTR</span> [<span style=color:#66d9ef>rbp-12</span>], <span style=color:#ae81ff>1337</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>lea</span>     <span style=color:#66d9ef>rax</span>, [<span style=color:#66d9ef>rbp-12</span>]
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>QWORD</span> <span style=color:#66d9ef>PTR</span> [<span style=color:#66d9ef>rbp-8</span>], <span style=color:#66d9ef>rax</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>rax</span>, <span style=color:#66d9ef>QWORD</span> <span style=color:#66d9ef>PTR</span> [<span style=color:#66d9ef>rbp-8</span>]
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>DWORD</span> <span style=color:#66d9ef>PTR</span> [<span style=color:#66d9ef>rax</span>], <span style=color:#ae81ff>7331</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>nop</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>pop</span>     <span style=color:#66d9ef>rbp</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>re</span>
+</span></span></code></pre></div><blockquote><p>On x86-64, 8-byte objects should be aligned to 8-byte boundaries. Therefore the pointer p must start at an address divisible by 8, since pointers occupy 8 bytes. In contrast, the integer variable <code>x</code> only requires 4 bytes.</p></blockquote><ol><li>After the function prologue and initialization of <code>x</code>, the program obtains the address of x using <code>lea rax, [rbp-12]</code>. This instruction loads the effective address of the local variable into the RAX register.</li></ol><blockquote><p>Note that this does not load the value of <code>x</code>, but rather its address.</p></blockquote><ol start=2><li><p>Next, <code>mov QWORD PTR [rbp-8], rax</code> stores that address in the memory location reserved for the pointer p.</p></li><li><p>The program then loads the value of <code>p</code> back into the RAX register with <code>mov rax, QWORD PTR [rbp-8]</code>. This places the address of <code>x</code> into RAX.</p></li><li><p>Finally, the instruction <code>mov DWORD PTR [rax], 7331</code> writes the value 7331 to the memory address stored in RAX. Since RAX holds the address of <code>x</code>, this operation effectively performs the assignment <code>*p = 7331</code>, changing the value of <code>x</code>.</p></li></ol></div><div class=post-footer></div></article></main></body></html>
