@@ -17,7 +17,7 @@ void func() {
 }
 ```
 
-```
+```asm
 func():
         push    rbp
         mov     rbp, rsp
@@ -54,7 +54,7 @@ int func(int num) {
 }
 ```
 
-```
+```asm
 func(int):
         push    rbp
         mov     rbp, rsp
@@ -81,7 +81,7 @@ int func(int num) {
 }
 ```
 
-```
+```asm
 func(int):
         push    rbp
         mov     rbp, rsp
@@ -123,7 +123,7 @@ void func(int num) {
 }
 ```
 
-```
+```asm
 func(int):
         push    rbp
         mov     rbp, rsp
@@ -167,7 +167,7 @@ void func() {
 }
 ```
 
-```
+```asm
 factorial(int):
         push    rbp
         mov     rbp, rsp
@@ -225,7 +225,7 @@ func():
 
 ## Pointers
 
-```
+```cpp
 void func() {
     int x = 1337;
     int *p;
@@ -234,7 +234,7 @@ void func() {
 }
 ```
 
-```
+```asm
 func():
         push    rbp
         mov     rbp, rsp
